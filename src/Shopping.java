@@ -28,26 +28,33 @@ public class Shopping
 		System.out.println("::Please Select::");
 		ConnectionTest.makeDesign();
 		
-		System.out.println("1.Admin Login");
+		System.out.print("1.Admin Login\t\t");
 		System.out.println("2.User Login");
-		System.out.println("3.User SignUp");
+		System.out.print("3.User SignUp\t\t");
+		System.out.println("4.Seller Login");
+		System.out.println("5.Seller SignUp");
 		ConnectionTest.makeDesign();
 		
 		System.out.print("Choice : ");
 		int x = sc.nextInt();
+		
 		switch(x)
 		{
 		case 1:Login.adminLogin();break;
 		case 2:Login.login();break;
 		case 3:Login.signUp();break;
+		case 4:Login.sellerLogin();break;
+		case 5:Login.sellerSignup();break;
 		default:System.out.println("Invalid choice");System.exit(0);
 		}
+		
 	}
 }
 class Login
 {
 	static String see_user_profile = ""; 
 	static int see_user_id = 0;
+	static int user_city = 0;
 	static void adminLogin() throws Exception
 	{
 		Scanner sc = new Scanner(System.in);
@@ -98,6 +105,7 @@ class Login
 			System.out.println("Welcome  "+rs.getString(2));
 			Login.see_user_profile = rs.getString(4);
 			Login.see_user_id = rs.getInt(1);
+			Login.user_city = rs.getInt(5);
 			ConnectionTest.makeDesign();
 			while(true)
 			{
@@ -123,6 +131,29 @@ class Login
 		String name = sc.nextLine();
 		System.out.print("Enter Your Email : ");
 		String email = sc.next();
+		
+		String sql = "SELECT * FROM city";
+		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		ConnectionTest.makeDesign();
+		System.out.println("Available cities : ");
+		ConnectionTest.makeDesign();
+		ArrayList<Integer> city_array = new ArrayList<Integer>();
+		while(rs.next())
+		{
+			city_array.add(rs.getInt(1));
+			System.out.println(rs.getInt(1)+" : "+rs.getString(2));
+		}
+		ConnectionTest.makeDesign();
+		
+		System.out.print("Enter city Id : ");
+		int city = sc.nextInt();
+		while(!city_array.contains(city))
+		{
+			System.out.print("Please Enter a valid city id : ");
+			city = sc.nextInt();
+		}
+		
 		System.out.print("Enter Your password : ");
 		String password = sc.next();
 		System.out.print("Re-Enter Your password : ");
@@ -135,8 +166,8 @@ class Login
 			repass = sc.next();
 		}
 		
-		String sql = "INSERT INTO users (user_name,user_pass,user_email) values('"+name+"','"+password+"','"+email+"')";
-		Statement st = ConnectionTest.con.createStatement();
+		sql = "INSERT INTO users (user_name,user_pass,user_email,user_city) values('"+name+"','"+password+"','"+email+"','"+city+"')";
+		st = ConnectionTest.con.createStatement();
 		int result = st.executeUpdate(sql);
 		
 		if(result > 0)
@@ -154,6 +185,160 @@ class Login
 				ConnectionTest.makeDesign();
 			}
 		}
+	}
+	static void sellerLogin() throws Exception
+	{
+		Scanner sc = new Scanner(System.in);
+		new ConnectionTest();
+		
+		System.out.print("Enter Seller Id  : ");
+		String selleremail = sc.next();
+		System.out.print("Enter Seller Password : ");
+		String pass = sc.next();
+		
+		String sql = "SELECT * FROM seller_master WHERE seller_email = '"+selleremail+"' and seller_password = '"+pass+"'";
+		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		
+		if(rs.next())
+		{
+			if(rs.getString(2).equals(selleremail) && rs.getString(3).equals(pass))
+			{
+				ConnectionTest.makeDesign();
+				while(true)
+				{
+					Seller.sellerMenu();
+					ConnectionTest.makeDesign();
+				}
+			}
+			else
+			{
+				System.out.println("Authentication error...Try again.");
+			}
+		}
+		
+	}
+	static void sellerSignup() throws Exception
+	{
+		Scanner sc = new Scanner(System.in);
+		new ConnectionTest();
+		
+		System.out.print("Enter SellerId : ");
+		String selleremail = sc.next();
+		
+		String sql = "SELECT * FROM city";
+		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		ConnectionTest.makeDesign();
+		System.out.println("Available cities : ");
+		ConnectionTest.makeDesign();
+		ArrayList<Integer> city_array = new ArrayList<Integer>();
+		while(rs.next())
+		{
+			city_array.add(rs.getInt(1));
+			System.out.println(rs.getInt(1)+" : "+rs.getString(2));
+		}
+		ConnectionTest.makeDesign();
+		
+		System.out.print("Enter city Id : ");
+		int city = sc.nextInt();
+		while(!city_array.contains(city))
+		{
+			System.out.print("Please Enter a valid city id : ");
+			city = sc.nextInt();
+		}
+		
+		System.out.print("Enter Seller Password : ");
+		String pass = sc.next();
+		System.out.print("Re-enter password : ");
+		String repass = sc.next();
+		while(!pass.equals(repass))
+		{
+			System.out.print("Passwords did not match...\nEnter again : ");
+			repass = sc.next();
+		}
+		
+		sql = "INSERT INTO seller_master(seller_email,seller_password,seller_city) values('"+selleremail+"','"+pass+"','"+city+"')";
+		st = ConnectionTest.con.createStatement();
+		int result = st.executeUpdate(sql);
+		
+		if(result > 0)
+		{
+			ConnectionTest.makeDesign();
+			System.out.println("***Successfully Signed Up***");
+			System.out.print("Want to Login now (Y/N)? : ");
+			if(sc.next().equalsIgnoreCase("y"))
+				Login.sellerLogin();
+			else
+			{
+				ConnectionTest.makeDesign();
+				System.out.println("Thank You");
+				ConnectionTest.makeDesign();
+			}
+		}
+	}
+}
+class Seller
+{
+	static void sellerMenu() throws Exception
+	{
+		Scanner sc = new Scanner(System.in);
+		
+		System.out.println("Choose One.");
+		ConnectionTest.makeDesign();
+		System.out.println("1.See Pricing");
+		System.out.println("2.View Profile");
+		System.out.println("3.Edit Profile");
+		System.out.println("4.See Earning");
+		System.out.println("5.Add Products");
+		System.out.println("6.Remove Products");
+		
+		ConnectionTest.makeDesign();
+		System.out.print("Choice : ");
+		int choice = sc.nextInt();
+		
+		switch(choice)
+		{
+		case 1:Seller.seePricing();break;
+		case 2:Seller.seeProfile();break;
+		case 3:Seller.editProfile();break;
+		case 4:Seller.totalEarning();break;
+		case 5:Seller.addProducts();break;
+		case 6:Seller.removeProducts();break;
+		case 0:
+			ConnectionTest.makeDesign();
+			System.out.println("Thank you");
+			ConnectionTest.makeDesign();
+			System.exit(0);
+		default:System.out.println("Invalid Choice.Try Again.");
+		}
+	}
+	static void seePricing() throws Exception
+	{
+		
+	}
+	static void totalEarning() throws Exception
+	{
+		
+	}
+	static void addProducts() throws Exception
+	{
+		new ConnectionTest();
+		Scanner sc = new Scanner(System.in);
+
+		System.out.println();
+	}
+	static void removeProducts() throws Exception
+	{
+		
+	}
+	static void seeProfile() throws Exception
+	{
+		
+	}
+	static void editProfile() throws Exception
+	{
+		
 	}
 }
 class User
@@ -224,7 +409,7 @@ class User
 	{
 		Scanner sc = new Scanner(System.in);
 		new ConnectionTest();
-		String sql = "SELECT * FROM users WHERE user_email = '"+Login.see_user_profile+"'";
+		String sql = "SELECT * FROM users INNER JOIN city on city.city_id = users.user_city WHERE user_email = '"+Login.see_user_profile+"'";
 		Statement st = ConnectionTest.con.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		System.out.println("**Your Profile**");
@@ -233,6 +418,7 @@ class User
 		
 		System.out.println("Name : "+rs.getString(2));
 		System.out.println("Email : "+rs.getString(4));
+		System.out.println("City : "+rs.getString(7));
 		ConnectionTest.makeDesign();
 		
 		System.out.print("Want to edit profile ? (Y/N) \nChoice : ");
@@ -249,10 +435,32 @@ class User
 		System.out.print("Enter Name : ");
 		String name = sc.nextLine();
 		System.out.print("Enter Email : ");
-		String email = sc.next();
+		String email = sc.next();		
 		
-		String sql = "UPDATE users SET user_email = '"+email+"' , user_name = '"+name+"' WHERE user_email = '"+Login.see_user_profile+"'";
+		String sql = "SELECT * FROM city";
 		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		ConnectionTest.makeDesign();
+		System.out.println("Available cities : ");
+		ConnectionTest.makeDesign();
+		ArrayList<Integer> city_array = new ArrayList<Integer>();
+		while(rs.next())
+		{
+			city_array.add(rs.getInt(1));
+			System.out.println(rs.getInt(1)+" : "+rs.getString(2));
+		}
+		ConnectionTest.makeDesign();
+		System.out.print("Enter city Id : ");
+		int city = sc.nextInt();
+		while(!city_array.contains(city))
+		{
+			System.out.print("Please Enter a valid city id : ");
+			city = sc.nextInt();
+		}
+		
+		
+		sql = "UPDATE users SET user_email = '"+email+"' , user_name = '"+name+"',user_city = '"+city+"' WHERE user_email = '"+Login.see_user_profile+"'";
+		st = ConnectionTest.con.createStatement();
 		int x = st.executeUpdate(sql);
 		if(x > 0)
 		{
@@ -338,7 +546,7 @@ class User
 			int new_qty = rs.getInt(5)-1;
 			sql = "UPDATE products SET product_qty = '"+new_qty+"' WHERE product_id = "+id;
 			int temp = st.executeUpdate(sql);
-			sql = "INSERT INTO business(bus_product_id,bus_user_id) VALUES('"+id+"','"+Login.see_user_id+"')";
+			sql = "INSERT INTO business(bus_product_id,bus_user_id,user_city) VALUES('"+id+"','"+Login.see_user_id+"','"+Login.user_city+"')";
 			st = ConnectionTest.con.createStatement();
 			int result = st.executeUpdate(sql);
 			if(result > 0 && temp > 0)
@@ -397,7 +605,8 @@ class Admin
 		System.out.print("11.Add Offers to Category\t");
 		System.out.println("12.View deleted products");
 		System.out.print("13.View deleted Categories\t");
-		System.out.print("14.View Products Category Wise\t");
+		System.out.println("14.View Products Category Wise");
+		System.out.print("15.Add Cities\t");
 		System.out.println("\n0.Logout");
 		
 		ConnectionTest.makeDesign();
@@ -420,6 +629,7 @@ class Admin
 		case 12:Admin.viewDeletedProducts();break;
 		case 13:Admin.viewDeletedCategories();break;
 		case 14:User.seeProductsCategoryWise();break;
+		case 15:Admin.addCity();break;
 		case 0:
 			ConnectionTest.makeDesign();
 			System.out.println("Thank you");
@@ -430,6 +640,28 @@ class Admin
 	}
 	
 	
+	private static void addCity() throws Exception 
+	{
+		Scanner sc = new Scanner(System.in);
+		new ConnectionTest();
+		System.out.print("Enter City Name : ");
+		String city = sc.nextLine();
+		String sql = "INSERT INTO city (city_name) VALUES('"+city+"')";
+		Statement st = ConnectionTest.con.createStatement();
+		int result = st.executeUpdate(sql);
+		if(result > 0)
+		{
+			ConnectionTest.makeDesign();
+			System.out.println("**City Added**");
+		}
+		else
+		{
+			ConnectionTest.makeDesign();
+			System.out.println("Database Error");
+		}
+	}
+
+
 	static void addProduct() throws Exception
 	{
 		Scanner sc = new Scanner(System.in);
@@ -732,15 +964,16 @@ class Admin
 	static void seeTransactions() throws Exception
 	{
 		new ConnectionTest();
-		String sql = "SELECT * FROM business INNER JOIN products on products.product_id = business.bus_product_id ORDER BY business_id DESC";
+		String sql = "SELECT * FROM business natural join city natural join products\r\n" + 
+				     "where city.city_id = business.user_city and products.product_id = business.bus_product_id ORDER BY business_id DESC";
 		Statement st = ConnectionTest.con.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		System.out.println("::All Shopping History::");
 		ConnectionTest.makeDesign();
-		System.out.println("#id\tProduct Name\t\tDate");
+		System.out.println("#id\tProduct Name\t\tDate\t\t\tCity");
 		while(rs.next())
 		{
-			System.out.println(rs.getInt(1)+"   \t"+rs.getString(6)+"\t    "+rs.getObject(4));
+			System.out.println(rs.getInt(1)+"     \t"+rs.getString(9)+"\t    "+rs.getObject(4)+"\t    "+rs.getObject(7));
 		}		
 	}
 	private static void addOfferToCategory() throws Exception 
