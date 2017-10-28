@@ -315,7 +315,7 @@ class Seller
 	}
 	static void seePricing() throws Exception
 	{
-		
+		Admin.viewPricing();
 	}
 	static void totalEarning() throws Exception
 	{
@@ -606,7 +606,9 @@ class Admin
 		System.out.println("12.View deleted products");
 		System.out.print("13.View deleted Categories\t");
 		System.out.println("14.View Products Category Wise");
-		System.out.print("15.Add Cities\t");
+		System.out.print("15.Add Cities\t\t\t");
+		System.out.println("16.View Pricing");
+		System.out.print("17.Edit Pricing\t");
 		System.out.println("\n0.Logout");
 		
 		ConnectionTest.makeDesign();
@@ -629,6 +631,8 @@ class Admin
 		case 12:Admin.viewDeletedProducts();break;
 		case 13:Admin.viewDeletedCategories();break;
 		case 14:User.seeProductsCategoryWise();break;
+		case 16:Admin.viewPricing();break;
+		case 17:Admin.editPricing();break;
 		case 15:Admin.addCity();break;
 		case 0:
 			ConnectionTest.makeDesign();
@@ -640,7 +644,63 @@ class Admin
 	}
 	
 	
-	private static void addCity() throws Exception 
+	private static void editPricing() throws Exception
+	{
+		Scanner sc = new Scanner(System.in);
+		new ConnectionTest();
+		
+		System.out.println("Available Prices : ");
+		String sql = "SELECT * FROM rate_card ORDER BY rate_id DESC";
+		ConnectionTest.makeDesign();
+		System.out.println("Id\t\tPrice Range\t\tPrice(Rupees)");
+		ConnectionTest.makeDesign();
+		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		while(rs.next())
+		{
+			System.out.println(rs.getInt(1)+"\t\t"+rs.getString(2)+"\t\t"+rs.getInt(3));
+		}
+		ConnectionTest.makeDesign();
+		
+		System.out.print("Enter price id : ");
+		int id = sc.nextInt();
+		System.out.print("Enter Price : ");
+		int rate = sc.nextInt();
+		
+		sql = "Update rate_card SET "
+				+ "rate = "+rate+" WHERE rate_id = "+id;
+		st = ConnectionTest.con.createStatement();
+		int res = st.executeUpdate(sql);
+		if(res > 0)
+		{
+			ConnectionTest.makeDesign();
+			System.out.println("Rate Updated : ");
+		}
+		else
+		{
+			ConnectionTest.makeDesign();
+			System.out.println("Error...Try again");
+		}
+	}
+
+
+	static void viewPricing() throws Exception 
+	{
+		String sql = "SELECT * FROM rate_card ORDER BY rate_id DESC";
+		new ConnectionTest();
+		ConnectionTest.makeDesign();
+		System.out.println("Price Range\t\tPrice(Rupees)");
+		ConnectionTest.makeDesign();
+		Statement st = ConnectionTest.con.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		while(rs.next())
+		{
+			System.out.println(rs.getString(2)+"\t\t"+rs.getInt(3));
+		}
+	}
+
+
+	static void addCity() throws Exception 
 	{
 		Scanner sc = new Scanner(System.in);
 		new ConnectionTest();
